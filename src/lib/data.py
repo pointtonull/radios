@@ -39,20 +39,22 @@ def update_path(path, strengh):
     Propagates the sthengh changes for the given path
     """
     for url in path:
-        node = _get_node(url, for_update=True)
+        node = m.Node.get_for_update(url=url)
+        if not node:
+            node = m.Node(url=url)
         node.strengh += D(strengh)
         node.runs += 1
         average = D(node.strengh / node.runs)
         if node.runs > 8:
-            node.m8 = D(node.m8 * 7 + strengh) / 8
+            node.m8 = D(node.m8 * 7 + D(strengh)) / 8
         else:
             node.m8 = average
         if node.runs > 16:
-            node.m16 = D(node.m16 * 15 + strengh) / 16
+            node.m16 = D(node.m16 * 15 + D(strengh)) / 16
         else:
             node.m16 = average
         if node.runs > 32:
-            node.m32 = D(node.m8 * 31 + strengh) / 32
+            node.m32 = D(node.m8 * 31 + D(strengh)) / 32
         else:
             node.m32 = average
         print("%d %s" % (node.m8, node.url))
