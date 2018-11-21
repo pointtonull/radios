@@ -3,6 +3,7 @@
 
 from collections import defaultdict
 from decimal import Decimal as D
+from functools import lru_cache
 from random import choice, random
 from subprocess import Popen, PIPE
 from sys import exit
@@ -45,9 +46,23 @@ def extract_urls(element, urls=None):
     return urls
 
 
-def get_json(url=BROWSE, params={}):
+def get_json(url=BROWSE, params=[]):
+    params = dict(params)
     params["render"] = "json"
-    return HTTP_SESSION.get(url, params=params).json()
+    response = HTTP_SESSION.get(url, params=params)
+    try:
+        json = response.json()
+    except:
+        raise ValueError(response.text)
+    return json
+
+
+@lru_cache(maxsize=1024)
+def get_urls(url=BROWSE, params=[]):
+    childs = get_json(url, params)
+    body = childs["body"]
+    urls = extract_urls(body)
+    return urls
 
 
 def weighted_choice(weights_options):
@@ -64,12 +79,10 @@ def weighted_choice(weights_options):
 def choose_random(node=None, category=None, path=[]):
     print("Choose from %s" % (node or category))
     if node is None:
-        childs = get_json(params={"c": category})
+        urls = get_urls(params=(("c", category),))
     else:
         path.append(node)
-        childs = get_json(node)
-    body = childs["body"]
-    urls = extract_urls(body)
+        urls = get_urls(node)
     weights_urls = data.get_weights_urls(urls)
     url = weighted_choice(weights_urls)
     if HOME in url:
