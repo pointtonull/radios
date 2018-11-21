@@ -106,7 +106,7 @@ def play(url):
     proc = Popen(command, shell=True)
     proc.wait()
     end_time = time.time()
-    strengh = max(end_time - start_time - 30, 0) # average time for sound to start
+    strengh = max(end_time - start_time - 60, 0) # less than a minute is bad
     return strengh
 
 
