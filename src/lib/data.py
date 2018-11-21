@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import Decimal as D
 from . import models as m
 
 
@@ -37,19 +37,19 @@ def update_path(path, strengh):
     """
     for url in path:
         node = _get_node(url)
-        node.strengh += strengh
+        node.strengh += D(strengh)
         node.runs += 1
-        average = node.strengh / node.runs
+        average = D(node.strengh / node.runs)
         if node.runs > 8:
-            node.m8 = (node.m8 * 7 + strengh) / 8
+            node.m8 = D(node.m8 * 7 + strengh) / 8
         else:
             node.m8 = average
         if node.runs > 16:
-            node.m16 = (node.m16 * 15 + strengh) / 16
+            node.m16 = D(node.m16 * 15 + strengh) / 16
         else:
             node.m16 = average
         if node.runs > 32:
-            node.m32 = (node.m8 * 31 + strengh) / 32
+            node.m32 = D(node.m8 * 31 + strengh) / 32
         else:
             node.m32 = average
         print("%d %s" % (node.m8, node.url))
