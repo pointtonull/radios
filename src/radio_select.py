@@ -2,10 +2,11 @@
 #-*- coding: UTF-8 -*-
 
 from collections import defaultdict
-from random import choice
+from decimal import Decimal as D
+from random import choice, random
+from subprocess import Popen, PIPE
 from sys import exit
 import time
-from subprocess import Popen, PIPE
 
 import requests
 
@@ -49,6 +50,17 @@ def get_json(url=BROWSE, params={}):
     return HTTP_SESSION.get(url, params=params).json()
 
 
+def weighted_choice(weights_options):
+    total = sum(max(10, weight) for weight, option in weights_options)
+    partial = int(round(D(random()) * total))
+    accumulated = 0
+    for weight, option in weights_options:
+        accumulated += weight
+        if accumulated >= partial:
+            return option
+    return option
+
+
 def choose_random(node=None, category=None, path=[]):
     print("Choose from %s" % (node or category))
     if node is None:
@@ -58,7 +70,8 @@ def choose_random(node=None, category=None, path=[]):
         childs = get_json(node)
     body = childs["body"]
     urls = extract_urls(body)
-    url = choice(urls)
+    weights_urls = data.get_weights_urls(urls)
+    url = weighted_choice(weights_urls)
     if HOME in url:
         return choose_random(url, path=path)
     else:
