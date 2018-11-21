@@ -40,9 +40,9 @@ def extract_urls(element, urls=None):
         elif "body" in element:
             extract_urls(element["body"], urls)
         else:
-            raise NotImplementedError("Not implemented!")
+            raise NotImplementedError("Not implemented!: %s" % element)
     else:
-        raise NotImplementedError("Not implemented!")
+        raise NotImplementedError("Not implemented!: %s" % element)
     return urls
 
 
