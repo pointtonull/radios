@@ -23,11 +23,25 @@ def init_db(db_dict=None):
 
 
 @m.db_session
-def _get_node(url):
-    node = m.Node.get_for_update(url=url)
-    if not node:
-        node = m.Node(url=url)
-    return node
+def _get_node(url, for_update=False):
+    if for_update:
+        node = m.Node.get_for_update(url=url)
+        if not node:
+            node = m.Node(url=url)
+        return node
+    else:
+        return m.Node.get(url=url)
+
+
+def get_weights_urls(urls):
+    weights_url = []
+    for url in urls:
+        node = _get_node(url)
+        if node is None:
+            weights_url.append((0, url))
+        else:
+            weights_url.append((node.m8, url))
+    return weights_url
 
 
 @m.db_session
@@ -36,7 +50,7 @@ def update_path(path, strengh):
     Propagates the sthengh changes for the given path
     """
     for url in path:
-        node = _get_node(url)
+        node = _get_node(url, for_update=True)
         node.strengh += D(strengh)
         node.runs += 1
         average = D(node.strengh / node.runs)
