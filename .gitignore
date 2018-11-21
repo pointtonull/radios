@@ -1,3 +1,8 @@
+*.sw?
+.deps
+
+nothing added to commit but untracked files present (use "git add" to track)
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -14,8 +19,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
 parts/
 sdist/
 var/
