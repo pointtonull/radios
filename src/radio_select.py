@@ -66,14 +66,18 @@ def get_urls(url=BROWSE, params=[]):
 
 
 def weighted_choice(weights_options):
-    total = sum(max(10, weight) for weight, option in weights_options)
-    partial = int(round(D(random()) * total))
-    accumulated = 0
-    for weight, option in weights_options:
-        accumulated += weight
-        if accumulated >= partial:
-            return option
-    return option
+    if random() > .8:
+        weight, option = choice(weights_options)
+        return option
+    else:
+        total = sum(max(10, weight) for weight, option in weights_options)
+        partial = D(random()) * total
+        accumulated = 0
+        for weight, option in weights_options:
+            accumulated += weight
+            if accumulated >= partial:
+                return option
+        return option
 
 
 def choose_random(node=None, category=None, path=[]):
