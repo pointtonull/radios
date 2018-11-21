@@ -85,6 +85,7 @@ def play(url):
     """
     start_time = time.time()
     command = "streamplayer '%s'" % url
+    print("=> %s" % command)
     proc = Popen(command, shell=True)
     proc.wait()
     end_time = time.time()
@@ -95,11 +96,11 @@ def main():
     init_db()
 
     while True:
+        print("")
         path = choose_random(category="music")
         url = path[-1]
         strengh = play(url)
         data.update_path(path, strengh)
-        time.sleep(2)
 
 
 if __name__ == "__main__":
