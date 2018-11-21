@@ -25,15 +25,15 @@ TUNE      =  HOME + "Tune.ashx"
 
 def extract_urls(element, urls=None):
     if urls is None:
-        urls = []
+        urls = set()
     if isinstance(element, list):
         for item in element:
             extract_urls(item, urls)
     elif isinstance(element, dict):
         if "URL" in element:
-            urls.append(element["URL"])
+            urls.add(element["URL"])
         elif "url" in element:
-            urls.append(element["url"])
+            urls.add(element["url"])
         elif "children" in element:
             extract_urls(element["children"], urls)
         elif "body" in element:
