@@ -112,11 +112,16 @@ def play(url):
 
 def main():
     init_db()
+    history = set()
 
     while True:
         print("")
         path = choose_random(category="music")
         url = path[-1]
+        if url in history:
+            continue
+        else:
+            history.add(url)
         strengh = play(url)
         data.update_path(path, strengh)
 
