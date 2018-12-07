@@ -14,3 +14,9 @@ class Node(db.Entity):
     m24 = Optional(Decimal, default=0, volatile=True)
     cache = Optional('Cache')
 
+
+class Cache(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    lastupdated = Required(float)
+    content = Optional(LongStr, lazy=True)
+    node = Required(Node)
