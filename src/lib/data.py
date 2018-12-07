@@ -26,6 +26,13 @@ def init_db(db_dict=None):
 
 
 @m.db_session
+def get_all_weights_urls(string=""):
+    return m.select((node.m8, node.url)
+                    for node in m.Node
+                    if string in node.url)[:]
+
+
+@m.db_session
 def get_weights_urls(urls):
     weights_url = []
     for url in urls:
