@@ -49,13 +49,17 @@ def update_path(path, strengh):
     """
     Propagates the sthengh changes for the given path
     """
+    print("Updating weights:")
     for url in path:
+        if url is None:
+            continue
         node = m.Node.get_for_update(url=url)
         if not node:
             node = m.Node(url=url)
         node.strengh += D(strengh)
         node.runs += 1
         average = D(node.strengh / node.runs)
+        old_m8 = node.m8
         if node.runs > 8:
             node.m8 = D(node.m8 * 7 + D(strengh)) / 8
         else:
@@ -68,5 +72,5 @@ def update_path(path, strengh):
             node.m32 = D(node.m8 * 31 + D(strengh)) / 32
         else:
             node.m32 = average
-        print("%d %s" % (node.m8, node.url))
+        print("  %12s  %s" % ("%d (%+d)" % (node.m8, round(node.m8 - old_m8)), node.url))
 
