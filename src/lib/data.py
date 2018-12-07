@@ -1,6 +1,10 @@
 from decimal import Decimal as D
 from . import models as m
 
+HOME      =  "http://opml.radiotime.com/"
+BROWSE    =  HOME + "Browse.ashx"
+DESCRIBE  =  HOME + "Describe.ashx"
+TUNE      =  HOME + "Tune.ashx"
 
 def init_db(db_dict=None):
     db_dict = db_dict or {
