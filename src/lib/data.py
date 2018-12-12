@@ -63,10 +63,12 @@ def set_url_cache(url, content):
 
 
 @m.db_session
-def get_all_weights_urls(string=""):
+def get_all_weights_urls(string="", nostring="impossible123"):
     return m.select((node.m8, node.url)
                     for node in m.Node
-                    if string in node.url)[:]
+                    if string in node.url
+                    if nostring not in node.url
+                    )[:]
 
 
 @m.db_session
