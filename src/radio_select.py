@@ -7,7 +7,6 @@ from json import loads as readjson
 from random import choice, random
 from subprocess import Popen, PIPE
 import re
-# import signal
 import sys
 import time
 
