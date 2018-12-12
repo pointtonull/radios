@@ -172,20 +172,6 @@ def play(url):
     returns the time the user spent playing
     """
     global PROC
-    if ".pls" in url or ".m3u" in url:
-        # MPlayer will not parse pls because of security reasons
-        print("Parsing playlist: %s" % url)
-        response = HTTP_SESSION.get(url)
-        text = response.text
-        try:
-            url = re.findall(r"((?:http|ftp)s?.*?$)", text, re.M)[-1]
-        except IndexError:
-            raise ValueError("Could not find url in:\n%s" % text)
-
-        return play(url)
-
-    if "football" in url:
-        return True, 0
 
     command = "streamplayer '%s'" % url
     print("=> %s" % command)
@@ -206,6 +192,18 @@ def play(url):
         for line in stderr:
             line = line.decode()
             exiting = REGEX_MP_EXITING.match(line)
+            if "Playlist parsing disabled for security reasons." in line:
+                print("Parsing playlist: %s" % url)
+                response = HTTP_SESSION.get(url)
+                text = response.text
+                try:
+                    url = re.findall(r"((?:http|ftp)s?.*?$)", text, re.M)[-1]
+                except IndexError:
+                    raise ValueError("Could not find url in:\n%s" % text)
+                return play(url)
+            if "Unsupported http 302 redirect to https protocol" in line:
+                url = url.replace("http://", "https://")
+                return play(url)
             if exiting:
                 reason = exiting.group("reason")
 
