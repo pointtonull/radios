@@ -1,4 +1,6 @@
 from decimal import Decimal as D
+import time
+
 from . import models as m
 
 HOME      =  "http://opml.radiotime.com/"
@@ -23,6 +25,40 @@ def init_db(db_dict=None):
             logging.info("Already mapped: %s" % error)
         else:
             raise
+
+
+@m.db_session
+def clean_cache(limit=3600*24*7):
+    """
+    Defaults to one week
+    """
+    since = time.time() - limit
+    olds = m.select(cache
+                    for cache in m.Cache
+                    if cache.lastupdated < since)
+    return olds.delete()
+
+
+@m.db_session
+def get_url_cache(url):
+    cache = m.select(cache
+                     for cache in m.Cache
+                     if cache.url == url).first()
+    if cache:
+        print("(+)", end="")
+        return cache.content
+    else:
+        print("(-)", end="")
+
+
+@m.db_session
+def set_url_cache(url, content):
+    cache = m.Cache.get_for_update(url=url)
+    if cache:
+        cache.content = content
+        cache.lastupdated=time.time()
+    else:
+        cache = m.Cache(url=url, content=content, lastupdated=time.time())
 
 
 @m.db_session
