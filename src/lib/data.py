@@ -77,7 +77,7 @@ def get_weights_urls(urls):
     for url in urls:
         node = m.Node.get(url=url)
         if node is None:
-            weights_url.append((0, url))
+            weights_url.append((200, url))
         else:
             weights_url.append((node.m8, url))
     return weights_url
@@ -121,9 +121,5 @@ def update_path(path, strengh):
             node.m16 = D(node.m16 * 15 + D(strengh)) / 16
         else:
             node.m16 = average
-        if node.runs > 32:
-            node.m32 = D(node.m8 * 31 + D(strengh)) / 32
-        else:
-            node.m32 = average
         print("  %12s  %s" % ("%d (%+d)" % (node.m8, round(node.m8 - old_m8)), node.url))
 
