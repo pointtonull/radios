@@ -3,7 +3,7 @@
 
 from collections import defaultdict
 from decimal import Decimal as D
-from functools import lru_cache
+from json import loads as readjson
 from random import choice, random
 from subprocess import Popen, PIPE
 import re
@@ -79,12 +79,16 @@ def get_json(url=BROWSE, params=[]):
             raise RuntimeError("Queries limit reached.")
         else:
             raise NotImplementedError(response.text)
-    return json
+    return response.text
 
 
-@lru_cache(maxsize=1024)
 def get_urls(url=BROWSE, params=[]):
-    json = get_json(url, params)
+    json = data.get_url_cache(url + str(params))
+    if not json:
+        json = get_json(url, params)
+        data.set_url_cache(url + str(params), json)
+    json = readjson(json)
+
     try:
         title = json["head"]["title"]
     except:
@@ -223,9 +227,7 @@ def main():
     print("  <Control-C>: exit without storing")
     print("  <Enter>: jump next station without storing")
 
-#     signal.signal(signal.SIGINT, signal_handler)
-#     signal.signal(signal.SIGKILL, signal_handler)
-
+    data.clean_cache()
     errorcode = 0
 
     while True:
