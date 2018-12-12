@@ -118,35 +118,47 @@ def weighted_choice(weights_options, randomness=0.3):
     return option
 
 
-def choose_random(node=None, category=None, path=None):
+def choose_random(node=None, category=None, path=None, jump=False):
+    if jump:
+        print("\n\n# Jump (403)")
+        url = weighted_choice(data.get_all_weights_urls(nostring=HOME), randomness=0.1)
+        return [url]
+
     if path is None:
         path = []
-        if random() > .5:
+
+        if random() <= .10:
             print("# Jump")
             url = weighted_choice(data.get_all_weights_urls(), randomness=0.1)
+
             if HOME in url:
-                return choose_random(url, path=path)
+                return choose_random(url, path=[url])
             else:
-                path.append(url)
-                return path
+                return [url]
 
     if node is None:
-        title, urls = get_urls(params=(("c", category),))
+        try:
+            title, urls = get_urls(params=(("c", category),))
+        except RuntimeError:
+            # Jump because too many requests.
+            return choose_random(node, category, path, jump=True)
     else:
         if not "://" in node:
             node = "http://opml.radiotime.com/Browse.ashx?id=%s" % node
         path.append(node)
-        title, urls = get_urls(node)
+        try:
+            title, urls = get_urls(node)
+        except RuntimeError:
+            # Jump because too many requests.
+            return choose_random(node, category, path, jump=True)
+
     print("> %s" % title)
     weights_urls = data.get_weights_urls(urls)
     url = weighted_choice(weights_urls, randomness=.5)
     if url is None:
         if path:
-            print("Empty list, back one step.")
-            try:
-                return choose_random(path[-2], path=path[:-2])
-            except IndexError:
-                return None
+            print("Empty list, restart.")
+            return None
         else:
             raise NotImplementedError("Still not sure what to do here.")
     if HOME in url:
