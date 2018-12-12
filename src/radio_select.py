@@ -228,6 +228,7 @@ def main():
     print("  <Enter>: jump next station without storing")
 
     data.clean_cache()
+    data.print_report()
     errorcode = 0
 
     while True:

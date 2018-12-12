@@ -1,4 +1,5 @@
 from decimal import Decimal as D
+from pprint import pprint
 import time
 
 from . import models as m
@@ -78,6 +79,20 @@ def get_weights_urls(urls):
         else:
             weights_url.append((node.m8, url))
     return weights_url
+
+
+@m.db_session
+def print_report():
+    average_score, scored_nodes = m.select((m.avg(node.m8), m.count(node))
+            for node in m.Node).first()
+    scored_radios = m.select(m.count(node)
+            for node in m.Node
+            if HOME not in node.url).first()
+    cached_pages = m.select(m.count(cache) for cache in m.Cache).first()
+    print("\nStats:")
+    for key, value in locals().items():
+        print("  %s: %s" % (key.replace("_", " "), value))
+
 
 
 @m.db_session
