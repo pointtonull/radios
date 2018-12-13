@@ -192,8 +192,12 @@ def play(url):
 
     if runtime < 20:
         print("Reason: %s, after %f seconds" % (reason, runtime))
+        store = True
+
     if store:
-        strengh = max(runtime - 120, 0)
+        if runtime < 80:
+            runtime = 0
+        strengh = runtime
     else:
         strengh = None
 
