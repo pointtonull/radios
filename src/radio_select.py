@@ -87,43 +87,30 @@ def get_urls(url=BROWSE, params=[]):
     return title, urls
 
 
-def weighted_choice(weights_options, randomness=0.3):
+def weighted_choice(weights_options, randomness=2):
     if not weights_options:
         return None
 
-    if random() <= (1 - randomness):
-        total = sum(weight for weight, option in weights_options)
-        partial = D(random()) * total
-        accumulated = 0
-        option = None
-        for weight, option in weights_options:
-            accumulated += weight
-            if accumulated >= partial:
-#                 print("  %d %s" % (round(weight), option))
-                return option
-
-    weight, option = choice(weights_options)
-#     print("  * %s" % option)
+    weights_options = [(w ** D(1/randomness), o) for w, o in weights_options]
+    total = sum(w for w, o in weights_options)
+    partial = D(random()) * total
+    accumulated = 0
+    option = None
+    for weight, option in weights_options:
+        accumulated += weight
+        if accumulated >= partial:
+            return option
     return option
 
 
 def choose_random(node=None, category=None, path=None, jump=False):
     if jump:
         print("\n\n# Jump (403)")
-        url = weighted_choice(data.get_all_weights_urls(nostring=HOME), randomness=0.1)
+        url = weighted_choice(data.get_all_weights_urls(nostring=HOME), randomness=2)
         return [url]
 
     if path is None:
         path = []
-
-        if random() <= .10:
-            print("# Jump")
-            url = weighted_choice(data.get_all_weights_urls(), randomness=0.1)
-
-            if HOME in url:
-                return choose_random(url, path=[url])
-            else:
-                return [url]
 
     if node is None:
         try:
@@ -143,13 +130,10 @@ def choose_random(node=None, category=None, path=None, jump=False):
 
     print("> %s" % title)
     weights_urls = data.get_weights_urls(urls)
-    url = weighted_choice(weights_urls, randomness=.5)
+    url = weighted_choice(weights_urls, randomness=4)
     if url is None:
-        if path:
-            print("Empty list, restart.")
-            return None
-        else:
-            raise NotImplementedError("Still not sure what to do here.")
+        print("Empty list, restart.")
+        return None
     if HOME in url:
         return choose_random(url, path=path)
     else:
@@ -205,6 +189,7 @@ def play(url):
     store = state["store"]
 
     runtime = end_time - start_time
+
     if runtime < 20:
         print("Reason: %s, after %f seconds" % (reason, runtime))
     if store:
