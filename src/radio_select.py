@@ -32,16 +32,6 @@ BROWSE    =  HOME + "Browse.ashx"
 DESCRIBE  =  HOME + "Describe.ashx"
 TUNE      =  HOME + "Tune.ashx"
 
-PROC = None
-
-
-# def signal_handler(sig, frame):
-#     print(sig, frame)
-#     if PROC is not None:
-#         PROC.kill()
-#         time.sleep(1)
-#         PROC.terminate()
-#     sys.exit(0)
 
 def extract_urls(element, urls=None):
     if urls is None:
@@ -171,23 +161,21 @@ def play(url):
     """
     returns the time the user spent playing
     """
-    global PROC
-
     command = "streamplayer '%s'" % url
     print("=> %s" % command)
     start_time = time.time()
-    PROC = Popen(command, shell=True, stderr=PIPE)
+    proc = Popen(command, shell=True, stderr=PIPE)
     store = True
     exit = False
     reason = None
 
     try:
-        PROC.wait()
+        proc.wait()
     except KeyboardInterrupt:
         reason = "Control-C"
     end_time = time.time()
 
-    stderr = PROC.stderr.readlines()
+    stderr = proc.stderr.readlines()
     if not reason:
         for line in stderr:
             line = line.decode()
@@ -266,7 +254,6 @@ def main():
             strengh =  min(strengh, 60 * 60 * 2) # cap to two hours
             data.update_path(path, strengh)
 
-#     signal.pause()
     return errorcode
 
 
