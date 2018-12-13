@@ -64,11 +64,17 @@ def set_url_cache(url, content):
 
 @m.db_session
 def get_all_weights_urls(string="", nostring="impossible123"):
-    return m.select((node.m8, node.url)
+    strengh_url = m.select((node.m8, node.url)
                     for node in m.Node
                     if string in node.url
                     if nostring not in node.url
-                    )[:]
+                    )
+    weights_url = []
+    for weight, url in strengh_url:
+        if weight < 10:
+            weight = 0
+        weights_url.append((weight, url))
+    return weights_url
 
 
 @m.db_session
@@ -79,7 +85,10 @@ def get_weights_urls(urls):
         if node is None:
             weights_url.append((200, url))
         else:
-            weights_url.append((node.m8, url))
+            strengh = node.m8
+            if strengh < 10:
+                strengh = 0
+            weights_url.append((strengh, url))
     return weights_url
 
 
