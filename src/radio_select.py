@@ -193,12 +193,12 @@ def play(url):
 
     runtime = end_time - start_time
 
-    if runtime < 20:
+    if runtime < 5:
         print("Reason: %s, after %f seconds" % (reason, runtime))
         store = True
 
     if store:
-        if runtime < 80:
+        if runtime < 60:
             runtime = 0
         strengh = runtime
     else:
