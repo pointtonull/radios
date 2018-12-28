@@ -225,25 +225,27 @@ def main():
 #         path = choose_random(category="music")
 #         path = choose_random(category="local")
 #         path = choose_random("r100325") # Colombia
-        path = choose_random()
-        try:
-            url = path[-1]
-        except TypeError:
-            continue
-
-        if url in history:
+#         path = choose_random("r0") # Location
+        path = choose_random(randomness=1)
+        url = path[-1]
+        history = {k: v
+                   for k, v in history.items()
+                   if v > (time.time() - 60 * 60 * 1)}
+        if url is None:
+            strengh = 0
+            exit = False
+        elif url in history:
             print("History hit")
             continue
         else:
             exit, strengh = play(url)
             history[url] = time.time()
 
-        exit, strengh = play(url)
         if exit:
             print("Closing")
             break
-        if not strengh is None:
-            strengh =  min(strengh, 60 * 60 * 2) # cap to two hours
+        if strengh is not None:
+            print("Strengh: %d" % strengh)
             data.update_path(path, strengh)
 
     return errorcode
