@@ -9,6 +9,9 @@ BROWSE    =  HOME + "Browse.ashx"
 DESCRIBE  =  HOME + "Describe.ashx"
 TUNE      =  HOME + "Tune.ashx"
 
+WEIGHT_LOWER_THRESHOLD = 10
+WEIGHT_UPPER_THRESHOLD = 60 * 60 * 2
+
 def init_db(db_dict=None):
     db_dict = db_dict or {
         'provider': 'sqlite',
@@ -71,8 +74,10 @@ def get_all_weights_urls(string="", nostring="impossible123"):
                     )
     weights_url = []
     for weight, url in strengh_url:
-        if weight < 10:
+        if weight < WEIGHT_LOWER_THRESHOLD:
             weight = 0
+        else:
+            weight = min(WEIGHT_UPPER_THRESHOLD, weight)
         weights_url.append((weight, url))
     return weights_url
 
@@ -83,10 +88,14 @@ def get_weights_urls(urls):
     for url in urls:
         node = m.Node.get(url=url)
         if node is None:
-            weights_url.append((200, url))
+            average_score = m.select(
+                    m.avg(node.m8)
+                    for node in m.Node
+            ).first()
+            weights_url.append((D(average_score), url))
         else:
             strengh = node.m8
-            if strengh < 10:
+            if strengh < WEIGHT_LOWER_THRESHOLD:
                 strengh = 0
             weights_url.append((strengh, url))
     return weights_url
@@ -94,8 +103,10 @@ def get_weights_urls(urls):
 
 @m.db_session
 def print_report():
-    average_score, scored_nodes = m.select((m.avg(node.m8), m.count(node))
-            for node in m.Node).first()
+    average_score, scored_nodes = m.select(
+            (m.avg(node.m8), m.count(node))
+            for node in m.Node
+    ).first()
     scored_radios = m.select(m.count(node)
             for node in m.Node
             if HOME not in node.url).first()
@@ -112,6 +123,7 @@ def update_path(path, strengh):
     Propagates the sthengh changes for the given path
     """
     print("Updating weights:")
+    strengh =  min(strengh, WEIGHT_UPPER_THRESHOLD)
     for url in path:
         if url is None:
             continue
