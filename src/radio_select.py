@@ -105,10 +105,10 @@ def weighted_choice(weights_options, randomness=2):
     return option
 
 
-def choose_random(node=None, category=None, path=None, jump=False):
+def choose_random(node=None, category=None, path=None, jump=False, randomness=1):
     if jump:
         print("\n\n# Jump (403)")
-        url = weighted_choice(data.get_all_weights_urls(nostring=HOME), randomness=2)
+        url = weighted_choice(data.get_all_weights_urls(nostring=HOME), randomness=randomness*2)
         return [url]
 
     if path is None:
@@ -132,10 +132,11 @@ def choose_random(node=None, category=None, path=None, jump=False):
 
     print("> %s" % title)
     weights_urls = data.get_weights_urls(urls)
-    url = weighted_choice(weights_urls, randomness=4)
+    url = weighted_choice(weights_urls, randomness=randomness)
     if url is None:
         print("Empty list, restart.")
-        return None
+        path.append(None)
+        return path
     if HOME in url:
         return choose_random(url, path=path)
     else:
