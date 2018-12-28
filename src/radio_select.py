@@ -209,7 +209,7 @@ def play(url):
 
 def main():
     init_db()
-    history = [None] * 5
+    history = {}
 
     print("Keybinds:")
     print("  <q>: jump next station, learn new weights")
@@ -235,8 +235,8 @@ def main():
             print("History hit")
             continue
         else:
-            history.append(url)
-            history.pop(0)
+            exit, strengh = play(url)
+            history[url] = time.time()
 
         exit, strengh = play(url)
         if exit:
