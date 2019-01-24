@@ -11,6 +11,7 @@ import sys
 import time
 
 import requests
+from requests.exceptions import ReadTimeout, ConnectionError
 
 from lib import data
 from lib.data import init_db
@@ -31,6 +32,17 @@ HOME      =  "http://opml.radiotime.com/"
 BROWSE    =  HOME + "Browse.ashx"
 DESCRIBE  =  HOME + "Describe.ashx"
 TUNE      =  HOME + "Tune.ashx"
+
+
+def retry(function, tries=10):
+    for attempt in range(tries):
+        try:
+            return function()
+        except (ConnectionError, ReadTimeout) as error:
+            print("Retrying connection")
+            time.sleep(5)
+    else:
+        raise error
 
 
 def extract_urls(element, urls=None):
@@ -60,7 +72,7 @@ def extract_urls(element, urls=None):
 def get_json(url=BROWSE, params=[]):
     params = dict(params)
     params["render"] = "json"
-    response = HTTP_SESSION.get(url, params=params)
+    response = retry(lambda :HTTP_SESSION.get(url, params=params))
     try:
         json = response.json()
     except:
@@ -169,7 +181,7 @@ def play(url):
             exiting = REGEX_MP_EXITING.match(line)
             if "Playlist parsing disabled for security reasons." in line:
                 print("Parsing playlist: %s" % url)
-                response = HTTP_SESSION.get(url)
+                response = retry(lambda :HTTP_SESSION.get(url))
                 text = response.text
                 try:
                     url = re.findall(r"((?:http|ftp)s?.*?$)", text, re.M)[-1]
