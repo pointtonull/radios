@@ -35,14 +35,17 @@ TUNE      =  HOME + "Tune.ashx"
 
 
 def retry(function, tries=10):
+    last_error = None
     for attempt in range(tries):
+        if attempt > 0:
+            time.sleep(5)
         try:
             return function()
         except (ConnectionError, ReadTimeout) as error:
             print("Retrying connection")
-            time.sleep(5)
+            last_error = error
     else:
-        raise error
+        raise last_error
 
 
 def extract_urls(element, urls=None):
