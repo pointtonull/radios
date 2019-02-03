@@ -103,6 +103,7 @@ def get_urls(url=BROWSE, params=[]):
 
 
 def weighted_choice(weights_options, randomness=2):
+    # TODO: reemplace with stdlib random.choice
     if not weights_options:
         return None
 
