@@ -34,7 +34,7 @@ DESCRIBE  =  HOME + "Describe.ashx"
 TUNE      =  HOME + "Tune.ashx"
 
 
-def retry(function, tries=10):
+def retry(function, tries=20):
     last_error = None
     for attempt in range(tries):
         if attempt > 0:
