@@ -114,7 +114,10 @@ def weighted_choice(weights_options, randomness=2):
     for weight, option in weights_options:
         accumulated += weight
         if accumulated >= partial:
-            print("%3d%%" % round((weight / total) * 100), end=" ")
+            try:
+                print("%3d%%" % round((weight / total) * 100), end=" ")
+            except:
+                pass
             return option
     print("%3d%%+" % round((weight / total) * 100), end=" ")
     return option
