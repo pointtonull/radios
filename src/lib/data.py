@@ -91,7 +91,7 @@ def get_weights_urls(urls):
             average_score = m.select(
                     m.avg(node.m8)
                     for node in m.Node
-            ).first()
+            ).first() or 0
             weights_url.append((D(average_score), url))
         else:
             strengh = node.m8
