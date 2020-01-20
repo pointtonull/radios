@@ -4,7 +4,7 @@
 from collections import defaultdict
 from decimal import Decimal as D
 from json import loads as readjson
-from random import choice, random
+from random import choice, random, choices
 from subprocess import Popen, PIPE
 import re
 import sys
@@ -17,6 +17,16 @@ from lib import data
 from lib.data import init_db
 
 REGEX_MP_EXITING = re.compile(r"\s*Exiting... \((?P<reason>.*?)\)")
+
+BLACKLIST = re.compile("|".join((
+    "christ",
+    "kids",
+    "podcast",
+    "sports",
+    "talk",
+    "children",
+    "catho",
+)), re.IGNORECASE)
 
 EXITING_REASONS = {
         "End of file": {"exit": False, "store": False},
@@ -95,36 +105,34 @@ def get_urls(url=BROWSE, params=[]):
 
     try:
         title = json["head"]["title"]
-    except:
-        title = json.get("head", "\o/")
+    except KeyError:
+        title = str(json.get("head", "\o/"))
     body = json["body"]
     urls = extract_urls(body)
     return title, urls
 
 
-def weighted_choice(weights_options, randomness=2):
-    # TODO: reemplace with stdlib random.choice
+def weighted_choice(weights_options, entropy=1):
     if not weights_options:
         return None
 
-    weights_options = [(w ** D(1/randomness), o) for w, o in weights_options]
-    total = sum(w for w, o in weights_options)
-    partial = D(random()) * total
+    weights, options = zip(*weights_options)
+    total = sum(weights)
+    weights = [float(weight / total) ** (1 / entropy)
+               for weight in weights]
+    total = sum(weights)
+    weights_options = list(zip(weights, options))
     accumulated = 0
-    option = None
-    for weight, option in weights_options:
-        accumulated += weight
-        if accumulated >= partial:
-            print("%3d%%" % round((weight / total) * 100), end=" ")
-            return option
-    print("%3d%%+" % round((weight / total) * 100), end=" ")
+    weight, option = choices(weights_options, weights)[0]
+    print("%3d%%+" % ((weight / total) * 100), end=" ")
     return option
 
 
-def choose_random(node=None, category=None, path=None, jump=False, randomness=1):
+def choose_random(node=None, category=None, path=None, jump=False, entropy=1):
     if jump:
         print("\n\n# Jump (403)")
-        url = weighted_choice(data.get_all_weights_urls(nostring=HOME), randomness=randomness*2)
+        url = weighted_choice(data.get_all_weights_urls(nostring=HOME),
+                              entropy=entropy * 2)
         return [url]
 
     if path is None:
@@ -135,7 +143,8 @@ def choose_random(node=None, category=None, path=None, jump=False, randomness=1)
             title, urls = get_urls(params=(("c", category),))
         except RuntimeError:
             # Jump because too many requests.
-            return choose_random(node, category, path, jump=True)
+            return choose_random(node, category, path, jump=True,
+                                 entropy=entropy)
     else:
         if not "://" in node:
             node = "http://opml.radiotime.com/Browse.ashx?id=%s" % node
@@ -144,17 +153,26 @@ def choose_random(node=None, category=None, path=None, jump=False, randomness=1)
             title, urls = get_urls(node)
         except RuntimeError:
             # Jump because too many requests.
-            return choose_random(node, category, path, jump=True)
+            return choose_random(node, category, path, jump=True,
+                                 entropy=entropy)
 
-    print("> %s" % title)
+    if title == "Browse":
+        print("> %s(%.1f)" % (title, entropy))
+    else:
+        print("> %s" % title)
     weights_urls = data.get_weights_urls(urls)
-    url = weighted_choice(weights_urls, randomness=randomness)
+    url = weighted_choice(weights_urls, entropy=entropy)
     if url is None:
         print("Empty list, restart.")
         path.append(None)
         return path
-    if HOME in url:
-        return choose_random(url, path=path)
+
+    if BLACKLIST.match(title):
+        print("** Blacklisted")
+        path.append(None)
+        return path
+    elif HOME in url:
+        return choose_random(url, path=path, entropy=entropy)
     else:
         path.append(url)
         return path
@@ -236,13 +254,16 @@ def main():
     data.print_report()
     errorcode = 0
 
+    entropy = .5
     while True:
         print("")
-#         path = choose_random(category="music")
-#         path = choose_random(category="local")
-#         path = choose_random("r100325") # Colombia
-#         path = choose_random("r0") # Location
-        path = choose_random(randomness=1)
+        choosed_time = time.time()
+#         path = choose_random(category="music", entropy=entropy)
+#         path = choose_random(category="local", entropy=entropy)
+#         path = choose_random("r100325", entropy=entropy)
+#         path = choose_random("r0", entropy=entropy)  # by location
+#         path = choose_random(entropy=1, entropy=entropy)
+        path = choose_random(entropy=entropy)  # any, all
         url = path[-1]
         history = {k: v
                    for k, v in history.items()
@@ -263,6 +284,12 @@ def main():
         if strengh is not None:
             print("Strengh: %d" % strengh)
             data.update_path(path, strengh)
+
+        age = time.time() - choosed_time
+        if age <= 120:
+            entropy += .5
+        else:
+            entropy = 1
 
     return errorcode
 

@@ -9,8 +9,8 @@ BROWSE    =  HOME + "Browse.ashx"
 DESCRIBE  =  HOME + "Describe.ashx"
 TUNE      =  HOME + "Tune.ashx"
 
-WEIGHT_LOWER_THRESHOLD = 10
-WEIGHT_UPPER_THRESHOLD = 60 * 60 * 2
+WEIGHT_LOWER_LIMIT = 5
+WEIGHT_UPPER_LIMIT = 60 * 60 * 2
 
 def init_db(db_dict=None):
     db_dict = db_dict or {
@@ -74,10 +74,10 @@ def get_all_weights_urls(string="", nostring="impossible123"):
                     )
     weights_url = []
     for weight, url in strengh_url:
-        if weight < WEIGHT_LOWER_THRESHOLD:
-            weight = 0
+        if weight < WEIGHT_LOWER_LIMIT:
+            weight = WEIGHT_LOWER_LIMIT
         else:
-            weight = min(WEIGHT_UPPER_THRESHOLD, weight)
+            weight = min(WEIGHT_UPPER_LIMIT, weight)
         weights_url.append((weight, url))
     return weights_url
 
@@ -95,8 +95,8 @@ def get_weights_urls(urls):
             weights_url.append((D(average_score), url))
         else:
             strengh = node.m8
-            if strengh < WEIGHT_LOWER_THRESHOLD:
-                strengh = 0
+            if strengh < WEIGHT_LOWER_LIMIT:
+                strengh = WEIGHT_LOWER_LIMIT
             weights_url.append((strengh, url))
     return weights_url
 
@@ -123,7 +123,7 @@ def update_path(path, strengh):
     Propagates the sthengh changes for the given path
     """
     print("Updating weights:")
-    strengh =  min(strengh, WEIGHT_UPPER_THRESHOLD)
+    strengh =  min(strengh, WEIGHT_UPPER_LIMIT)
     for url in path:
         if url is None:
             continue
