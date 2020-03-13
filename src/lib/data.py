@@ -1,4 +1,5 @@
 from decimal import Decimal as D
+from os import path
 from pprint import pprint
 import time
 
@@ -15,7 +16,7 @@ WEIGHT_UPPER_LIMIT = 60 * 60 * 2
 def init_db(db_dict=None):
     db_dict = db_dict or {
         'provider': 'sqlite',
-        'filename': 'radios.sqlite',
+        'filename': path.expanduser('~/.config/radios/radios.sqlite'),
         'create_db': True,
     }
 
