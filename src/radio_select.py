@@ -6,7 +6,7 @@ from collections import defaultdict
 from decimal import Decimal as D
 from json import loads as readjson
 from random import choice, random, choices
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, TimeoutExpired
 import os
 import re
 import sys
@@ -42,6 +42,8 @@ def wait_for_connection():
 
 EXITING_REASONS = {
         "End of file": {"exit": False, "store": False,
+                        "trigger": wait_for_connection},
+        "Suspended":   {"exit": False, "store": True,
                         "trigger": wait_for_connection},
         "Quit":        {"exit": False, "store": True},
         "Control-C":   {"exit": True,  "store": False},
@@ -203,11 +205,26 @@ def play(url):
     exit = False
     reason = None
 
-    try:
-        proc.wait()
-    except KeyboardInterrupt:
-        reason = "Control-C"
+    waited = 0
+    step = 10
+    while True:
+        try:
+            proc.wait(step)
+        except KeyboardInterrupt:
+            reason = "Control-C"
+            break
+        except TimeoutExpired:
+            waited += step
+        else:
+            break
+
     end_time = time.time()
+    runtime = end_time - start_time
+    if (waited + step) < runtime:
+        suspended = runtime - waited + step / 2
+        print(f"Suspended for ~{round(suspended / 60):.0f} minutes")
+        runtime = waited + step / 2
+        reason = "Suspended"
 
     stderr = proc.stderr.readlines()
     if not reason:
@@ -230,15 +247,15 @@ def play(url):
                 reason = exiting.group("reason")
 
     if reason is None:
-        print("Not found reason:")
+        print("Found no reason:")
         for line in stderr:
             print("  %s" % line.rstrip())
 
     state = EXITING_REASONS[reason]
     exit = state["exit"]
     store = state["store"]
+    state.get("trigger", int)()
 
-    runtime = end_time - start_time
 
     if runtime < 5:
         print("Reason: %s, after %f seconds" % (reason, runtime))
