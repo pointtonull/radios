@@ -7,6 +7,7 @@ from decimal import Decimal as D
 from json import loads as readjson
 from random import choice, random, choices
 from subprocess import Popen, PIPE
+import os
 import re
 import sys
 import time
@@ -29,8 +30,19 @@ BLACKLIST = re.compile("|".join((
     "catho",
 )), re.IGNORECASE)
 
+
+def wait_for_connection():
+    step = 1
+    while os.system("ping -c 1 radiotime.com"):
+        time.sleep(step)
+        step *= 1.5
+        if 60 < step:
+            raise RuntimeError("Connection broken")
+
+
 EXITING_REASONS = {
-        "End of file": {"exit": False, "store": False},
+        "End of file": {"exit": False, "store": False,
+                        "trigger": wait_for_connection},
         "Quit":        {"exit": False, "store": True},
         "Control-C":   {"exit": True,  "store": False},
         None:          {"exit": False, "store": True},
