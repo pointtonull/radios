@@ -18,9 +18,11 @@ from requests.exceptions import ReadTimeout, ConnectionError
 from lib import data
 from lib.data import init_db
 
+
 REGEX_MP_EXITING = re.compile(r"\s*Exiting... \((?P<reason>.*?)\)")
 
 BLACKLIST = re.compile("|".join((
+    "relig",
     "christ",
     "kids",
     "podcast",
@@ -28,6 +30,9 @@ BLACKLIST = re.compile("|".join((
     "talk",
     "children",
     "catho",
+    "calmradio",
+    "holiday",
+    "christmas",
 )), re.IGNORECASE)
 
 
@@ -182,7 +187,7 @@ def choose_random(node=None, category=None, path=None, jump=False, entropy=1):
         path.append(None)
         return path
 
-    if BLACKLIST.match(title):
+    if BLACKLIST.search(title) or BLACKLIST.search(url):
         print("** Blacklisted")
         path.append(None)
         return path
