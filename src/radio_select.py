@@ -1,5 +1,6 @@
-#!/usr/bin/env python3
-#-*- coding: UTF-8 -*-
+#!/bin/sh
+''''exec python -u -- "$0" ${1+"$@"} # '''
+# vi: syntax=python
 
 from collections import defaultdict
 from decimal import Decimal as D
